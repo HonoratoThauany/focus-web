@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { db } from "./firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 import { auth } from "./firebase"
+import ModoFoco from "./ModoFoco"
 
 const POMODORO = 25 * 60
 const PAUSA = 5 * 60
@@ -11,6 +12,7 @@ export default function Timer() {
   const [rodando, setRodando] = useState(false)
   const [emPausa, setEmPausa] = useState(false)
   const [sessoes, setSessoes] = useState(0)
+  const [modoFoco, setModoFoco] = useState(false)
 
   useEffect(() => {
     if (!rodando) return
@@ -50,37 +52,60 @@ export default function Timer() {
     return `${min}:${seg}`
   }
 
+  function iniciar() {
+    setRodando(true)
+    setModoFoco(true)
+  }
+
+  function pausar() {
+    setRodando(false)
+    setModoFoco(false)
+  }
+
   function reiniciar() {
     setRodando(false)
     setEmPausa(false)
     setSegundos(POMODORO)
+    setModoFoco(false)
   }
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <p className="text-slate-400 text-lg">
-        {emPausa ? "Pausa" : "Foco"}
-      </p>
-      <p className="text-8xl font-bold text-white tabular-nums">
-        {formatar(segundos)}
-      </p>
-      <div className="flex gap-4">
-        <button
-          onClick={() => setRodando((r) => !r)}
-          className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-3 rounded-xl transition"
-        >
-          {rodando ? "Pausar" : "Iniciar"}
-        </button>
-        <button
-          onClick={reiniciar}
-          className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-8 py-3 rounded-xl transition"
-        >
-          Reiniciar
-        </button>
+    <>
+      {modoFoco && rodando === false ? null : null}
+      {modoFoco && (
+        <ModoFoco
+          segundos={segundos}
+          emPausa={emPausa}
+          onPausar={pausar}
+          onReiniciar={reiniciar}
+        />
+      )}
+
+      <div className="flex flex-col items-center gap-6">
+        <p className="text-slate-400 text-lg">
+          {emPausa ? "Pausa" : "Foco"}
+        </p>
+        <p className="text-8xl font-bold text-white tabular-nums">
+          {formatar(segundos)}
+        </p>
+        <div className="flex gap-4">
+          <button
+            onClick={rodando ? pausar : iniciar}
+            className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-3 rounded-xl transition"
+          >
+            {rodando ? "Pausar" : "Iniciar"}
+          </button>
+          <button
+            onClick={reiniciar}
+            className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-8 py-3 rounded-xl transition"
+          >
+            Reiniciar
+          </button>
+        </div>
+        <p className="text-slate-400 text-sm">
+          Sessões hoje: <span className="text-white font-bold">{sessoes}</span>
+        </p>
       </div>
-      <p className="text-slate-400 text-sm">
-        Sessões hoje: <span className="text-white font-bold">{sessoes}</span>
-      </p>
-    </div>
+    </>
   )
 }
