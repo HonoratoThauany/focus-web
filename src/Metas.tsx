@@ -15,16 +15,23 @@ export default function Meta() {
   const [sessoesHoje, setSessoesHoje] = useState(0)
   const [editando, setEditando] = useState(false)
   const [novaMeta, setNovaMeta] = useState(4)
+  const [comemorando, setComemorando] = useState(false)
 
   useEffect(() => {
     carregarMeta()
     carregarSessoesHoje()
   }, [])
 
+  useEffect(() => {
+    if (sessoesHoje > 0 && sessoesHoje >= meta) {
+      setComemorando(true)
+      setTimeout(() => setComemorando(false), 3000)
+    }
+  }, [sessoesHoje, meta])
+
   async function carregarMeta() {
     const user = auth.currentUser
     if (!user) return
-
     const ref = doc(db, "metas", user.uid)
     const snap = await getDoc(ref)
     if (snap.exists()) {
@@ -36,32 +43,26 @@ export default function Meta() {
   async function carregarSessoesHoje() {
     const user = auth.currentUser
     if (!user) return
-
     const hoje = new Date()
     hoje.setHours(0, 0, 0, 0)
-
     const q = query(
       collection(db, "sessoes"),
       where("userId", "==", user.uid)
     )
-
     const snap = await getDocs(q)
     const sessoesDeHoje = snap.docs.filter((doc) => {
       const data = doc.data().criadoEm?.toDate()
       return data && data >= hoje
     })
-
     setSessoesHoje(sessoesDeHoje.length)
   }
 
   async function salvarMeta() {
     const user = auth.currentUser
     if (!user) return
-
     await setDoc(doc(db, "metas", user.uid), {
       sessoesporDia: novaMeta
     })
-
     setMeta(novaMeta)
     setEditando(false)
   }
@@ -70,12 +71,18 @@ export default function Meta() {
   const concluiu = sessoesHoje >= meta
 
   return (
-    <div className="w-full bg-slate-800 rounded-2xl p-4 flex flex-col gap-3">
+    <div className={`w-full rounded-2xl p-4 flex flex-col gap-3 transition-all duration-500 ${
+      comemorando
+        ? "bg-green-900/40 ring-1 ring-green-500/50"
+        : "bg-slate-800"
+    }`}>
       <div className="flex items-center justify-between">
-        <p className="text-white font-semibold text-sm">Meta do dia</p>
+        <p className="text-white font-semibold text-sm">
+          {comemorando ? "🎉 Meta atingida!" : "Meta do dia"}
+        </p>
         <button
           onClick={() => setEditando((e) => !e)}
-          className="text-slate-400 hover:text-white text-xs transition"
+          className="text-slate-500 hover:text-slate-300 text-xs transition"
         >
           {editando ? "Cancelar" : "Editar"}
         </button>
@@ -89,12 +96,12 @@ export default function Meta() {
             max={12}
             value={novaMeta}
             onChange={(e) => setNovaMeta(Number(e.target.value))}
-            className="bg-slate-700 text-white rounded-xl px-3 py-2 w-20 outline-none text-sm"
+            className="bg-slate-700 text-white rounded-xl px-3 py-2 w-16 outline-none text-sm"
           />
           <span className="text-slate-400 text-sm">sessões por dia</span>
           <button
             onClick={salvarMeta}
-            className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4 py-2 rounded-xl transition ml-auto"
+            className="bg-violet-700 hover:bg-violet-600 text-white text-sm px-4 py-2 rounded-xl transition active:scale-95 ml-auto"
           >
             Salvar
           </button>
@@ -103,20 +110,35 @@ export default function Meta() {
         <>
           <div className="flex items-end justify-between">
             <p className="text-slate-400 text-sm">
-              <span className="text-white font-bold text-2xl">{sessoesHoje}</span>
+              <span className={`font-bold text-2xl transition-all duration-300 ${concluiu ? "text-green-400" : "text-white"}`}>
+                {sessoesHoje}
+              </span>
               {" "}/{" "}{meta} sessões
             </p>
-            {concluiu && (
-              <p className="text-green-400 text-sm font-medium">🎉 Meta atingida!</p>
-            )}
           </div>
-          <div className="w-full bg-slate-700 rounded-full h-3">
+
+          {/* Barra de progresso */}
+          <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
             <div
-              className={`h-3 rounded-full transition-all duration-500 ${
+              className={`h-2 rounded-full transition-all duration-700 ease-out ${
                 concluiu ? "bg-green-500" : "bg-violet-600"
               }`}
               style={{ width: `${progresso}%` }}
             />
+          </div>
+
+          {/* Bolinhas de sessão */}
+          <div className="flex gap-1.5 flex-wrap">
+            {Array.from({ length: meta }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                  i < sessoesHoje
+                    ? "bg-violet-500 scale-110"
+                    : "bg-slate-700"
+                }`}
+              />
+            ))}
           </div>
         </>
       )}

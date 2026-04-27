@@ -26,9 +26,11 @@ type Tarefa = {
 
 const prioridadeCor = {
   Alta: "bg-red-500",
-  Média: "bg-yellow-500",
-  Baixa: "bg-green-500"
+  Média: "bg-amber-400",
+  Baixa: "bg-emerald-500"
 }
+
+const prioridadeOrdem = { Alta: 0, Média: 1, Baixa: 2 }
 
 export default function TaskList() {
   const [tarefas, setTarefas] = useState<Tarefa[]>([])
@@ -36,6 +38,7 @@ export default function TaskList() {
   const [prioridade, setPrioridade] = useState<Prioridade>("Média")
   const [pomodoros, setPomodoros] = useState(1)
   const [categoria, setCategoria] = useState<Categoria>("Faculdade")
+  const [adicionando, setAdicionando] = useState(false)
 
   useEffect(() => {
     const user = auth.currentUser
@@ -62,6 +65,7 @@ export default function TaskList() {
     const user = auth.currentUser
     if (!user) return
 
+    setAdicionando(true)
     await addDoc(collection(db, "tarefas"), {
       userId: user.uid,
       titulo,
@@ -74,6 +78,7 @@ export default function TaskList() {
 
     setTitulo("")
     setPomodoros(1)
+    setTimeout(() => setAdicionando(false), 300)
   }
 
   async function toggleConcluida(tarefa: Tarefa) {
@@ -86,28 +91,38 @@ export default function TaskList() {
     await deleteDoc(doc(db, "tarefas", id))
   }
 
-  const pendentes = tarefas.filter((t) => !t.concluida)
+  const pendentes = tarefas
+    .filter((t) => !t.concluida)
+    .sort((a, b) => prioridadeOrdem[a.prioridade] - prioridadeOrdem[b.prioridade])
+
   const concluidas = tarefas.filter((t) => t.concluida)
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <h2 className="text-white font-bold text-xl">Tarefas do dia</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-white font-bold text-xl">Tarefas do dia</h2>
+        {pendentes.length > 0 && (
+          <span className="text-xs text-slate-500">
+            {pendentes.length} pendente{pendentes.length > 1 ? "s" : ""}
+          </span>
+        )}
+      </div>
 
       {/* Formulário */}
-      <div className="bg-slate-800 rounded-2xl p-4 flex flex-col gap-3">
+      <div className="bg-slate-800/80 rounded-2xl p-4 flex flex-col gap-3 border border-slate-700/50">
         <input
           type="text"
           placeholder="O que você precisa fazer?"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && adicionarTarefa()}
-          className="bg-slate-700 text-white rounded-xl px-4 py-2 outline-none placeholder-slate-400 w-full"
+          className="bg-slate-700/60 text-white rounded-xl px-4 py-2.5 outline-none placeholder-slate-500 w-full text-sm focus:ring-1 focus:ring-violet-600 transition"
         />
         <div className="grid grid-cols-3 gap-2">
           <select
             value={prioridade}
             onChange={(e) => setPrioridade(e.target.value as Prioridade)}
-            className="bg-slate-700 text-white rounded-xl px-3 py-2 outline-none text-sm"
+            className="bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs"
           >
             <option>Alta</option>
             <option>Média</option>
@@ -116,7 +131,7 @@ export default function TaskList() {
           <select
             value={categoria}
             onChange={(e) => setCategoria(e.target.value as Categoria)}
-            className="bg-slate-700 text-white rounded-xl px-3 py-2 outline-none text-sm"
+            className="bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs"
           >
             <option>Faculdade</option>
             <option>Trabalho</option>
@@ -125,7 +140,7 @@ export default function TaskList() {
           <select
             value={pomodoros}
             onChange={(e) => setPomodoros(Number(e.target.value))}
-            className="bg-slate-700 text-white rounded-xl px-3 py-2 outline-none text-sm"
+            className="bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs"
           >
             <option value={1}>🍅 1</option>
             <option value={2}>🍅 2</option>
@@ -135,40 +150,48 @@ export default function TaskList() {
         </div>
         <button
           onClick={adicionarTarefa}
-          className="bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2 rounded-xl transition"
+          disabled={!titulo.trim()}
+          className={`font-semibold py-2.5 rounded-xl transition-all duration-200 active:scale-95 text-sm ${
+            titulo.trim()
+              ? "bg-violet-700 hover:bg-violet-600 text-white shadow-md shadow-violet-900/30"
+              : "bg-slate-700 text-slate-500 cursor-not-allowed"
+          }`}
         >
-          Adicionar tarefa
+          {adicionando ? "Adicionando..." : "Adicionar tarefa"}
         </button>
       </div>
 
       {/* Pendentes */}
       <div className="flex flex-col gap-2">
         {pendentes.length === 0 && concluidas.length === 0 && (
-          <p className="text-slate-500 text-sm text-center py-4">
-            Nenhuma tarefa ainda. Adicione uma acima!
-          </p>
+          <div className="text-center py-8">
+            <p className="text-slate-600 text-sm">Nenhuma tarefa ainda</p>
+            <p className="text-slate-700 text-xs mt-1">Adicione uma tarefa acima para começar</p>
+          </div>
         )}
         {pendentes.map((tarefa) => (
           <div
             key={tarefa.id}
-            className="bg-slate-800 rounded-2xl px-4 py-3 flex items-center gap-3"
+            className="bg-slate-800/80 border border-slate-700/50 rounded-2xl px-4 py-3 flex items-center gap-3 hover:border-slate-600/50 transition-all duration-200"
           >
-            <div className={`w-2 h-2 rounded-full shrink-0 ${prioridadeCor[tarefa.prioridade]}`} />
+            <div className={`w-1.5 h-8 rounded-full shrink-0 ${prioridadeCor[tarefa.prioridade]}`} />
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm truncate">{tarefa.titulo}</p>
-              <p className="text-slate-400 text-xs mt-1">
-                {tarefa.categoria} · {"🍅".repeat(tarefa.pomodoros)}
-              </p>
+              <p className="text-white text-sm font-medium truncate">{tarefa.titulo}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-slate-500 text-xs">{tarefa.categoria}</span>
+                <span className="text-slate-700 text-xs">·</span>
+                <span className="text-slate-500 text-xs">{"🍅".repeat(tarefa.pomodoros)}</span>
+              </div>
             </div>
             <button
               onClick={() => toggleConcluida(tarefa)}
-              className="bg-violet-600 hover:bg-violet-500 text-white text-xs px-3 py-1 rounded-lg transition font-medium shrink-0"
+              className="shrink-0 w-6 h-6 rounded-full border-2 border-slate-600 hover:border-violet-500 transition-all duration-200 flex items-center justify-center"
             >
-              Concluir
+              <span className="text-xs opacity-0 hover:opacity-100">✓</span>
             </button>
             <button
               onClick={() => deletarTarefa(tarefa.id)}
-              className="text-slate-500 hover:text-red-400 text-xs transition shrink-0"
+              className="text-slate-700 hover:text-red-400 text-xs transition shrink-0"
             >
               ✕
             </button>
@@ -179,30 +202,30 @@ export default function TaskList() {
       {/* Concluídas */}
       {concluidas.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-slate-500 text-xs font-medium uppercase tracking-wider">
-            Concluídas ({concluidas.length})
+          <p className="text-slate-600 text-xs font-medium uppercase tracking-wider">
+            Concluídas · {concluidas.length}
           </p>
           {concluidas.map((tarefa) => (
             <div
               key={tarefa.id}
-              className="bg-slate-800/50 rounded-2xl px-4 py-3 flex items-center gap-3"
+              className="bg-slate-800/40 rounded-2xl px-4 py-3 flex items-center gap-3 opacity-50 hover:opacity-70 transition-opacity duration-200"
             >
-              <div className="w-2 h-2 rounded-full shrink-0 bg-slate-600" />
+              <div className="w-1.5 h-8 rounded-full shrink-0 bg-slate-700" />
               <div className="flex-1 min-w-0">
-                <p className="text-slate-500 text-sm truncate line-through">{tarefa.titulo}</p>
-                <p className="text-slate-600 text-xs mt-1">
-                  {tarefa.categoria} · {"🍅".repeat(tarefa.pomodoros)}
-                </p>
+                <p className="text-slate-500 text-sm line-through truncate">{tarefa.titulo}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-slate-600 text-xs">{tarefa.categoria}</span>
+                </div>
               </div>
               <button
                 onClick={() => toggleConcluida(tarefa)}
-                className="bg-slate-700 text-slate-400 text-xs px-3 py-1 rounded-lg transition font-medium shrink-0"
+                className="shrink-0 w-6 h-6 rounded-full bg-violet-700/50 flex items-center justify-center"
               >
-                Desfazer
+                <span className="text-violet-300 text-xs">✓</span>
               </button>
               <button
                 onClick={() => deletarTarefa(tarefa.id)}
-                className="text-slate-500 hover:text-red-400 text-xs transition shrink-0"
+                className="text-slate-700 hover:text-red-400 text-xs transition shrink-0"
               >
                 ✕
               </button>
