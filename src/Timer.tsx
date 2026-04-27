@@ -3,6 +3,7 @@ import { db } from "./firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 import { auth } from "./firebase"
 import ModoFoco from "./ModoFoco"
+import { tocarSomFim, tocarSomPausa } from "./Sons"
 
 const POMODORO = 25 * 60
 const PAUSA = 5 * 60
@@ -24,6 +25,9 @@ export default function Timer() {
           if (!emPausa) {
             salvarSessao()
             setSessoes((n) => n + 1)
+            tocarSomFim()
+          } else {
+            tocarSomPausa()
           }
           setEmPausa((p) => !p)
           return emPausa ? POMODORO : PAUSA
@@ -35,10 +39,17 @@ export default function Timer() {
     return () => clearInterval(intervalo)
   }, [rodando, emPausa])
 
+  useEffect(() => {
+    if (rodando) {
+      document.title = `${formatar(segundos)} — Focus Web`
+    } else {
+      document.title = "Focus Web"
+    }
+  }, [segundos, rodando])
+
   async function salvarSessao() {
     const user = auth.currentUser
     if (!user) return
-
     await addDoc(collection(db, "sessoes"), {
       userId: user.uid,
       duracaoMinutos: 25,
@@ -62,6 +73,11 @@ export default function Timer() {
     setModoFoco(false)
   }
 
+  function retomar() {
+    setRodando(true)
+    setModoFoco(true)
+  }
+
   function reiniciar() {
     setRodando(false)
     setEmPausa(false)
@@ -71,7 +87,6 @@ export default function Timer() {
 
   return (
     <>
-      {modoFoco && rodando === false ? null : null}
       {modoFoco && (
         <ModoFoco
           segundos={segundos}
@@ -80,7 +95,6 @@ export default function Timer() {
           onReiniciar={reiniciar}
         />
       )}
-
       <div className="flex flex-col items-center gap-6">
         <p className="text-slate-400 text-lg">
           {emPausa ? "Pausa" : "Foco"}
@@ -90,14 +104,14 @@ export default function Timer() {
         </p>
         <div className="flex gap-4">
           <button
-            onClick={rodando ? pausar : iniciar}
-            className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-3 rounded-xl transition"
+            onClick={rodando ? pausar : segundos === (emPausa ? PAUSA : POMODORO) && !emPausa ? iniciar : retomar}
+            className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-3 rounded-xl transition active:scale-95"
           >
             {rodando ? "Pausar" : "Iniciar"}
           </button>
           <button
             onClick={reiniciar}
-            className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-8 py-3 rounded-xl transition"
+            className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-8 py-3 rounded-xl transition active:scale-95"
           >
             Reiniciar
           </button>

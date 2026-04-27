@@ -81,11 +81,23 @@ export default function TaskList() {
     setTimeout(() => setAdicionando(false), 300)
   }
 
+  const [concluindoId, setConcluindoId] = useState<string | null>(null)
+
   async function toggleConcluida(tarefa: Tarefa) {
-    await updateDoc(doc(db, "tarefas", tarefa.id), {
-      concluida: !tarefa.concluida
-    })
-  }
+    if (!tarefa.concluida) {
+      setConcluindoId(tarefa.id)
+      setTimeout(async () => {
+        await updateDoc(doc(db, "tarefas", tarefa.id), {
+          concluida: !tarefa.concluida
+        })
+        setConcluindoId(null)
+      }, 400)
+    } else {
+      await updateDoc(doc(db, "tarefas", tarefa.id), {
+        concluida: false
+      })
+    }
+}
 
   async function deletarTarefa(id: string) {
     await deleteDoc(doc(db, "tarefas", id))
@@ -172,7 +184,11 @@ export default function TaskList() {
         {pendentes.map((tarefa) => (
           <div
             key={tarefa.id}
-            className="bg-slate-800/80 border border-slate-700/50 rounded-2xl px-4 py-3 flex items-center gap-3 hover:border-slate-600/50 transition-all duration-200"
+            className={`bg-slate-800/80 border border-slate-700/50 rounded-2xl px-4 py-3 flex items-center gap-3 hover:border-slate-600/50 transition-all duration-300 ${
+              concluindoId === tarefa.id
+                ? "opacity-0 scale-95 translate-x-4"
+                : "opacity-100 scale-100 translate-x-0"
+            }`}
           >
             <div className={`w-1.5 h-8 rounded-full shrink-0 ${prioridadeCor[tarefa.prioridade]}`} />
             <div className="flex-1 min-w-0">
