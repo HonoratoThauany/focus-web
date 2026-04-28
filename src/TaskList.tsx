@@ -13,13 +13,12 @@ import {
 } from "firebase/firestore"
 
 type Prioridade = "Alta" | "Média" | "Baixa"
-type Categoria = "Faculdade" | "Trabalho" | "Pessoal"
+type Categoria = "Estudos" | "Trabalho" | "Pessoal"
 
 type Tarefa = {
   id: string
   titulo: string
   prioridade: Prioridade
-  pomodoros: number
   categoria: Categoria
   concluida: boolean
 }
@@ -36,13 +35,11 @@ export default function TaskList() {
   const [tarefas, setTarefas] = useState<Tarefa[]>([])
   const [titulo, setTitulo] = useState("")
   const [prioridade, setPrioridade] = useState<Prioridade>("Média")
-  const [pomodoros, setPomodoros] = useState(1)
-  const [categoria, setCategoria] = useState<Categoria>("Faculdade")
+  const [categoria, setCategoria] = useState<Categoria>("Estudos")
   const [adicionando, setAdicionando] = useState(false)
   const [concluindoId, setConcluindoId] = useState<string | null>(null)
   const [abrirPrioridade, setAbrirPrioridade] = useState(false)
   const [abrirCategoria, setAbrirCategoria] = useState(false)
-  const [abrirPomodoros, setAbrirPomodoros] = useState(false)
 
   useEffect(() => {
     const user = auth.currentUser
@@ -70,7 +67,6 @@ export default function TaskList() {
       if (!target.closest(".dropdown-container")) {
         setAbrirPrioridade(false)
         setAbrirCategoria(false)
-        setAbrirPomodoros(false)
       }
     }
 
@@ -88,14 +84,12 @@ export default function TaskList() {
       userId: user.uid,
       titulo,
       prioridade,
-      pomodoros,
       categoria,
       concluida: false,
       criadoEm: serverTimestamp()
     })
 
     setTitulo("")
-    setPomodoros(1)
     setTimeout(() => setAdicionando(false), 300)
   }
 
@@ -147,11 +141,11 @@ export default function TaskList() {
           className="bg-slate-700/60 text-white rounded-xl px-4 py-2.5 outline-none placeholder-slate-500 w-full text-sm focus:ring-1 focus:ring-violet-600 transition"
         />
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {/* Prioridade */}
           <div className="relative dropdown-container">
             <button
-              onClick={() => { setAbrirPrioridade(!abrirPrioridade); setAbrirCategoria(false); setAbrirPomodoros(false) }}
+              onClick={() => { setAbrirPrioridade(!abrirPrioridade); setAbrirCategoria(false) }}
               className="w-full bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs flex items-center justify-between"
             >
               <span className="flex items-center gap-1.5">
@@ -179,7 +173,7 @@ export default function TaskList() {
           {/* Categoria */}
           <div className="relative dropdown-container">
             <button
-              onClick={() => { setAbrirCategoria(!abrirCategoria); setAbrirPrioridade(false); setAbrirPomodoros(false) }}
+              onClick={() => { setAbrirCategoria(!abrirCategoria); setAbrirPrioridade(false) }}
               className="w-full bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs flex items-center justify-between"
             >
               {categoria}
@@ -187,39 +181,13 @@ export default function TaskList() {
             </button>
             {abrirCategoria && (
               <div className="absolute top-full mt-1 left-0 w-full bg-slate-800 border border-slate-700 rounded-xl overflow-hidden z-10 shadow-lg">
-                {(["Faculdade", "Trabalho", "Pessoal"] as Categoria[]).map((c) => (
+                {(["Estudos", "Trabalho", "Pessoal"] as Categoria[]).map((c) => (
                   <button
                     key={c}
                     onClick={() => { setCategoria(c); setAbrirCategoria(false) }}
                     className={`w-full px-3 py-2 text-xs text-left hover:bg-slate-700 transition ${categoria === c ? "text-white" : "text-slate-400"}`}
                   >
                     {c}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Pomodoros */}
-          <div className="relative dropdown-container">
-            <button
-              title={`${pomodoros} sessão${pomodoros > 1 ? "ões" : ""} de 25 minutos (~${pomodoros * 25} min)`}
-              onClick={() => { setAbrirPomodoros(!abrirPomodoros); setAbrirPrioridade(false); setAbrirCategoria(false) }}
-              className="w-full bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs flex items-center justify-between"
-            >
-              {"🍅".repeat(pomodoros)}
-              <span className="text-slate-500">▾</span>
-            </button>
-            {abrirPomodoros && (
-              <div className="absolute top-full mt-1 left-0 w-full bg-slate-800 border border-slate-700 rounded-xl overflow-hidden z-10 shadow-lg">
-                {[1, 2, 3, 4].map((n) => (
-                  <button
-                    key={n}
-                    title={`${n} sessão${n > 1 ? "ões" : ""} de 25 minutos (~${n * 25} min)`}
-                    onClick={() => { setPomodoros(n); setAbrirPomodoros(false) }}
-                    className={`w-full px-3 py-2 text-xs text-left hover:bg-slate-700 transition ${pomodoros === n ? "text-white" : "text-slate-400"}`}
-                  >
-                    {"🍅".repeat(n)}
                   </button>
                 ))}
               </div>
@@ -260,16 +228,7 @@ export default function TaskList() {
             <div className={`w-1.5 h-8 rounded-full shrink-0 ${prioridadeCor[tarefa.prioridade]}`} />
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-medium truncate">{tarefa.titulo}</p>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-slate-500 text-xs">{tarefa.categoria}</span>
-                <span className="text-slate-700 text-xs">·</span>
-                <span
-                  title={`${tarefa.pomodoros} sessão${tarefa.pomodoros > 1 ? "ões" : ""} de 25 minutos (~${tarefa.pomodoros * 25} min)`}
-                  className="text-slate-500 text-xs cursor-help"
-                >
-                  {"🍅".repeat(tarefa.pomodoros)}
-                </span>
-              </div>
+              <span className="text-slate-500 text-xs">{tarefa.categoria}</span>
             </div>
             <button
               onClick={() => toggleConcluida(tarefa)}
@@ -301,9 +260,7 @@ export default function TaskList() {
               <div className="w-1.5 h-8 rounded-full shrink-0 bg-slate-700" />
               <div className="flex-1 min-w-0">
                 <p className="text-slate-500 text-sm line-through truncate">{tarefa.titulo}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-slate-600 text-xs">{tarefa.categoria}</span>
-                </div>
+                <span className="text-slate-600 text-xs">{tarefa.categoria}</span>
               </div>
               <button
                 onClick={() => toggleConcluida(tarefa)}

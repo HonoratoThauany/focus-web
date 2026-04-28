@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { auth } from "./firebase"
-import { onAuthStateChanged, type User } from "firebase/auth"
-import { signOut } from "firebase/auth"
+import { onAuthStateChanged, type User, signOut } from "firebase/auth"
 import Login from "./login"
 import Timer from "./Timer"
 import TaskList from "./TaskList"
@@ -34,7 +33,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
       <header className="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 border-b border-slate-700">
-        <h1 className="text-white font-bold text-lg md:text-xl">Focus App</h1>
+        <h1 className="text-white font-bold text-lg md:text-xl">Focus Web</h1>
         <div className="flex items-center gap-2 md:gap-4">
           <p className="text-slate-400 text-xs md:text-sm hidden sm:block">
             Olá, {user.displayName}
