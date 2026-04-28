@@ -95,7 +95,7 @@ export default function Timer() {
           onReiniciar={reiniciar}
         />
       )}
-      <div className="flex flex-col gap-5 w-full">
+      <div className="flex flex-col gap-5 w-full items-center xl:items-start">
         <div className="flex flex-col gap-1">
           <p className="text-white/30 text-xs uppercase tracking-widest">
             {emPausa ? "Pausa" : "Foco"}
