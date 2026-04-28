@@ -20,8 +20,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <p className="text-white">Carregando...</p>
+      <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
+        <div className="w-6 h-6 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
       </div>
     )
   }
@@ -31,27 +31,32 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
-      <header className="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 border-b border-slate-700">
-        <h1 className="text-white font-bold text-lg md:text-xl">Focus Web</h1>
-        <div className="flex items-center gap-2 md:gap-4">
-          <p className="text-slate-400 text-xs md:text-sm hidden sm:block">
-            Olá, {user.displayName}
-          </p>
+    <div className="min-h-screen bg-[#0f1117] flex flex-col">
+      <header className="flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/5">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-violet-500" />
+          <h1 className="text-white/90 font-semibold text-base tracking-tight">Focus Web</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <p className="text-white/30 text-xs hidden sm:block">{user.displayName}</p>
           <button
             onClick={() => signOut(auth)}
-            className="text-slate-400 hover:text-white text-sm transition"
+            className="text-white/30 hover:text-white/60 text-xs transition-colors duration-200"
           >
             Sair
           </button>
         </div>
       </header>
-      <main className="flex-1 flex flex-col xl:flex-row gap-6 md:gap-8 px-4 md:px-8 py-6 md:py-8 items-start justify-center max-w-6xl mx-auto w-full">
-        <div className="flex flex-col items-center gap-4 w-full xl:w-auto xl:min-w-[320px]">
+
+      <main className="flex-1 flex flex-col xl:flex-row gap-6 px-6 md:px-10 py-8 max-w-6xl mx-auto w-full">
+        <div className="flex flex-col gap-4 w-full xl:w-[280px] shrink-0">
           <Timer />
           <Meta />
         </div>
-        <div className="w-full xl:flex-1">
+
+        <div className="hidden xl:block w-px bg-white/5 self-stretch" />
+
+        <div className="flex-1">
           <TaskList />
         </div>
       </main>

@@ -95,29 +95,33 @@ export default function Timer() {
           onReiniciar={reiniciar}
         />
       )}
-      <div className="flex flex-col items-center gap-6">
-        <p className="text-slate-400 text-lg">
-          {emPausa ? "Pausa" : "Foco"}
-        </p>
-        <p className="text-8xl font-bold text-white tabular-nums">
-          {formatar(segundos)}
-        </p>
-        <div className="flex gap-4">
+      <div className="flex flex-col gap-5 w-full">
+        <div className="flex flex-col gap-1">
+          <p className="text-white/30 text-xs uppercase tracking-widest">
+            {emPausa ? "Pausa" : "Foco"}
+          </p>
+          <p className="text-white text-7xl font-bold tabular-nums tracking-tight">
+            {formatar(segundos)}
+          </p>
+        </div>
+
+        <div className="flex gap-2">
           <button
             onClick={rodando ? pausar : segundos === (emPausa ? PAUSA : POMODORO) && !emPausa ? iniciar : retomar}
-            className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-3 rounded-xl transition active:scale-95"
+            className="bg-violet-600 hover:bg-violet-500 text-white font-medium px-8 py-2.5 rounded-xl transition-all duration-200 active:scale-95 text-sm"
           >
             {rodando ? "Pausar" : "Iniciar"}
           </button>
           <button
             onClick={reiniciar}
-            className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-8 py-3 rounded-xl transition active:scale-95"
+            className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/40 hover:text-white/70 transition-all duration-200 active:scale-95 text-sm"
           >
-            Reiniciar
+            ↺
           </button>
         </div>
-        <p className="text-slate-400 text-sm">
-          Sessões hoje: <span className="text-white font-bold">{sessoes}</span>
+
+        <p className="text-white/20 text-xs">
+          {sessoes} {sessoes === 1 ? "sessão" : "sessões"} hoje
         </p>
       </div>
     </>
