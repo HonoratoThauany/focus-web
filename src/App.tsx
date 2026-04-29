@@ -5,6 +5,7 @@ import Login from "./login"
 import Timer from "./Timer"
 import TaskList from "./TaskList"
 import Meta from "./Metas"
+import Logo from "./Logo"
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -33,10 +34,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col">
       <header className="flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/5">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-violet-500" />
-          <h1 className="text-white/90 font-semibold text-base tracking-tight">Focus Web</h1>
-        </div>
+        <Logo size="sm" />
         <div className="flex items-center gap-4">
           <p className="text-white/40 text-xs hidden sm:block">
             Olá, {user.displayName?.split(" ")[0]}
