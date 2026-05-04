@@ -12,7 +12,11 @@ import Logo from "./Logo"
 
 type Modo = "login" | "cadastro" | "esqueci"
 
-export default function Login() {
+type Props = {
+  onVisitante: () => void
+}
+
+export default function Login({ onVisitante }: Props) {
   const [modo, setModo] = useState<Modo>("login")
   const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
@@ -213,6 +217,29 @@ export default function Login() {
               >
                 Continuar com Google
               </button>
+            </>
+          )}
+
+          {/* Divisor Visitante */}
+          {modo !== "esqueci" && (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/5" />
+                <span className="text-white/20 text-xs">ou</span>
+                <div className="flex-1 h-px bg-white/5" />
+              </div>
+              <button
+                onClick={onVisitante}
+                className="w-full border border-white/8 hover:border-white/15 text-white/40 hover:text-white/70 font-medium py-2.5 rounded-xl transition-all duration-200 active:scale-95 text-sm group"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <span className="text-base">👁</span>
+                  Experimentar sem conta
+                </span>
+              </button>
+              <p className="text-white/15 text-xs text-center -mt-1">
+                Dados salvos apenas neste navegador
+              </p>
             </>
           )}
         </div>

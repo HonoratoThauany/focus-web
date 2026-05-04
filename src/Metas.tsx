@@ -10,7 +10,11 @@ import {
   getDocs
 } from "firebase/firestore"
 
-export default function Meta() {
+type Props = {
+  isVisitante?: boolean
+}
+
+export default function Meta({ isVisitante = false }: Props) {
   const [meta, setMeta] = useState(4)
   const [sessoesHoje, setSessoesHoje] = useState(0)
   const [editando, setEditando] = useState(false)
@@ -20,7 +24,7 @@ export default function Meta() {
   useEffect(() => {
     carregarMeta()
     carregarSessoesHoje()
-  }, [])
+  }, [isVisitante])
 
   useEffect(() => {
     if (sessoesHoje > 0 && sessoesHoje >= meta) {
@@ -29,7 +33,26 @@ export default function Meta() {
     }
   }, [sessoesHoje, meta])
 
+  // Atualizar sessões do visitante periodicamente
+  useEffect(() => {
+    if (!isVisitante) return
+    const interval = setInterval(() => {
+      carregarSessoesHoje()
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [isVisitante])
+
   async function carregarMeta() {
+    if (isVisitante) {
+      const salva = localStorage.getItem("visitante_meta")
+      if (salva) {
+        const valor = JSON.parse(salva)
+        setMeta(valor)
+        setNovaMeta(valor)
+      }
+      return
+    }
+
     const user = auth.currentUser
     if (!user) return
     const ref = doc(db, "metas", user.uid)
@@ -41,6 +64,20 @@ export default function Meta() {
   }
 
   async function carregarSessoesHoje() {
+    if (isVisitante) {
+      const hoje = new Date().toDateString()
+      const salvo = localStorage.getItem("visitante_sessoes")
+      if (salvo) {
+        const dados = JSON.parse(salvo)
+        if (dados.data === hoje) {
+          setSessoesHoje(dados.count)
+        } else {
+          setSessoesHoje(0)
+        }
+      }
+      return
+    }
+
     const user = auth.currentUser
     if (!user) return
     const hoje = new Date()
@@ -58,6 +95,13 @@ export default function Meta() {
   }
 
   async function salvarMeta() {
+    if (isVisitante) {
+      localStorage.setItem("visitante_meta", JSON.stringify(novaMeta))
+      setMeta(novaMeta)
+      setEditando(false)
+      return
+    }
+
     const user = auth.currentUser
     if (!user) return
     await setDoc(doc(db, "metas", user.uid), {

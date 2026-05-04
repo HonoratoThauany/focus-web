@@ -5,7 +5,11 @@ import { auth } from "./firebase"
 import ModoFoco from "./ModoFoco"
 import { tocarSomFim, tocarSomPausa } from "./Sons"
 
-export default function Timer() {
+type Props = {
+  isVisitante?: boolean
+}
+
+export default function Timer({ isVisitante = false }: Props) {
   const [tempoFoco, setTempoFoco] = useState(25)
   const [tempoDescanso, setTempoDescanso] = useState(5)
   const [segundos, setSegundos] = useState(25 * 60)
@@ -21,6 +25,22 @@ export default function Timer() {
   const POMODORO = tempoFoco * 60
   const PAUSA = tempoDescanso * 60
 
+  // Carregar sessões do visitante do localStorage
+  useEffect(() => {
+    if (isVisitante) {
+      const hoje = new Date().toDateString()
+      const salvo = localStorage.getItem("visitante_sessoes")
+      if (salvo) {
+        const dados = JSON.parse(salvo)
+        if (dados.data === hoje) {
+          setSessoes(dados.count)
+        } else {
+          localStorage.setItem("visitante_sessoes", JSON.stringify({ data: hoje, count: 0 }))
+        }
+      }
+    }
+  }, [isVisitante])
+
   useEffect(() => {
     if (!rodando) return
     const intervalo = setInterval(() => {
@@ -30,7 +50,14 @@ export default function Timer() {
           setModoFoco(false)
           if (!emPausa) {
             salvarSessao()
-            setSessoes((n) => n + 1)
+            setSessoes((n) => {
+              const novo = n + 1
+              if (isVisitante) {
+                const hoje = new Date().toDateString()
+                localStorage.setItem("visitante_sessoes", JSON.stringify({ data: hoje, count: novo }))
+              }
+              return novo
+            })
             tocarSomFim()
             setFocoTerminou(true)
           } else {
@@ -45,7 +72,7 @@ export default function Timer() {
       })
     }, 1000)
     return () => clearInterval(intervalo)
-  }, [rodando, emPausa, POMODORO, PAUSA])
+  }, [rodando, emPausa, POMODORO, PAUSA, isVisitante])
 
   useEffect(() => {
     if (rodando) {
@@ -56,6 +83,7 @@ export default function Timer() {
   }, [segundos, rodando])
 
   async function salvarSessao() {
+    if (isVisitante) return // Visitante não salva no Firebase
     const user = auth.currentUser
     if (!user) return
     await addDoc(collection(db, "sessoes"), {

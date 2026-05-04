@@ -33,7 +33,11 @@ const prioridadeOrdem = { Alta: 0, Média: 1, Baixa: 2 }
 
 const CATEGORIAS_PADRAO = ["Estudos", "Trabalho", "Pessoal"]
 
-export default function TaskList() {
+type Props = {
+  isVisitante?: boolean
+}
+
+export default function TaskList({ isVisitante = false }: Props) {
   const [tarefas, setTarefas] = useState<Tarefa[]>([])
   const [titulo, setTitulo] = useState("")
   const [prioridade, setPrioridade] = useState<Prioridade>("Média")
@@ -57,7 +61,23 @@ export default function TaskList() {
 
   const todasCategorias = [...CATEGORIAS_PADRAO, ...categoriasExtras]
 
+  // ─── Helpers para localStorage do visitante ───
+  function carregarTarefasLocal(): Tarefa[] {
+    const salvas = localStorage.getItem("visitante_tarefas")
+    return salvas ? JSON.parse(salvas) : []
+  }
+
+  function salvarTarefasLocal(lista: Tarefa[]) {
+    localStorage.setItem("visitante_tarefas", JSON.stringify(lista))
+  }
+
+  // ─── Carregar tarefas ───
   useEffect(() => {
+    if (isVisitante) {
+      setTarefas(carregarTarefasLocal())
+      return
+    }
+
     const user = auth.currentUser
     if (!user) return
 
@@ -75,7 +95,7 @@ export default function TaskList() {
     })
 
     return unsubscribe
-  }, [])
+  }, [isVisitante])
 
   useEffect(() => {
     function fecharDropdowns(e: MouseEvent) {
@@ -117,6 +137,22 @@ export default function TaskList() {
 
   async function adicionarTarefa() {
     if (!titulo.trim()) return
+
+    if (isVisitante) {
+      const novaTarefa: Tarefa = {
+        id: crypto.randomUUID(),
+        titulo,
+        prioridade,
+        categoria,
+        concluida: false
+      }
+      const novaLista = [...tarefas, novaTarefa]
+      setTarefas(novaLista)
+      salvarTarefasLocal(novaLista)
+      setTitulo("")
+      return
+    }
+
     const user = auth.currentUser
     if (!user) return
 
@@ -143,6 +179,19 @@ export default function TaskList() {
 
   async function salvarEdicao(id: string) {
     if (!editTitulo.trim()) return
+
+    if (isVisitante) {
+      const novaLista = tarefas.map((t) =>
+        t.id === id
+          ? { ...t, titulo: editTitulo, prioridade: editPrioridade, categoria: editCategoria }
+          : t
+      )
+      setTarefas(novaLista)
+      salvarTarefasLocal(novaLista)
+      setEditandoId(null)
+      return
+    }
+
     await updateDoc(doc(db, "tarefas", id), {
       titulo: editTitulo,
       prioridade: editPrioridade,
@@ -152,6 +201,27 @@ export default function TaskList() {
   }
 
   async function toggleConcluida(tarefa: Tarefa) {
+    if (isVisitante) {
+      if (!tarefa.concluida) {
+        setConcluindoId(tarefa.id)
+        setTimeout(() => {
+          const novaLista = tarefas.map((t) =>
+            t.id === tarefa.id ? { ...t, concluida: true } : t
+          )
+          setTarefas(novaLista)
+          salvarTarefasLocal(novaLista)
+          setConcluindoId(null)
+        }, 400)
+      } else {
+        const novaLista = tarefas.map((t) =>
+          t.id === tarefa.id ? { ...t, concluida: false } : t
+        )
+        setTarefas(novaLista)
+        salvarTarefasLocal(novaLista)
+      }
+      return
+    }
+
     if (!tarefa.concluida) {
       setConcluindoId(tarefa.id)
       setTimeout(async () => {
@@ -168,6 +238,13 @@ export default function TaskList() {
   }
 
   async function deletarTarefa(id: string) {
+    if (isVisitante) {
+      const novaLista = tarefas.filter((t) => t.id !== id)
+      setTarefas(novaLista)
+      salvarTarefasLocal(novaLista)
+      return
+    }
+
     await deleteDoc(doc(db, "tarefas", id))
   }
 
