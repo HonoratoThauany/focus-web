@@ -270,7 +270,7 @@ export default function TaskList() {
       <div className="bg-slate-800/80 rounded-2xl p-4 flex flex-col gap-3 border border-slate-700/50">
         <input
           type="text"
-          placeholder="O que você precisa fazer?"
+          placeholder="O que você precisa fazer hoje?"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && adicionarTarefa()}
@@ -279,40 +279,48 @@ export default function TaskList() {
 
         <div className="grid grid-cols-2 gap-2">
           {/* Prioridade */}
-          <div className="relative dropdown-container">
-            <button
-              onClick={() => { setAbrirPrioridade(!abrirPrioridade); setAbrirCategoria(false) }}
-              className="w-full bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs flex items-center justify-between"
-            >
-              <span className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${prioridadeCor[prioridade]}`} />
-                {prioridade}
-              </span>
-              <span className="text-slate-500">▾</span>
-            </button>
-            {abrirPrioridade && (
-              <div className="absolute top-full mt-1 left-0 w-full bg-slate-800 border border-slate-700 rounded-xl overflow-hidden z-10 shadow-lg">
-                {(["Alta", "Média", "Baixa"] as Prioridade[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => { setPrioridade(p); setAbrirPrioridade(false) }}
-                    className={`w-full px-3 py-2 text-xs text-left flex items-center gap-1.5 hover:bg-slate-700 transition ${prioridade === p ? "text-white" : "text-slate-400"}`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${prioridadeCor[p]}`} />
-                    {p}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="flex flex-col gap-1">
+            <label className="text-white/30 text-xs px-1">Prioridade</label>
+            <div className="relative dropdown-container">
+              <button
+                onClick={() => { setAbrirPrioridade(!abrirPrioridade); setAbrirCategoria(false) }}
+                title="Alta = urgente e importante · Média = importante · Baixa = pode esperar"
+                className="w-full bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs flex items-center justify-between"
+              >
+                <span className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${prioridadeCor[prioridade]}`} />
+                  {prioridade}
+                </span>
+                <span className="text-slate-500">▾</span>
+              </button>
+              {abrirPrioridade && (
+                <div className="absolute top-full mt-1 left-0 w-full bg-slate-800 border border-slate-700 rounded-xl overflow-hidden z-10 shadow-lg">
+                  {(["Alta", "Média", "Baixa"] as Prioridade[]).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => { setPrioridade(p); setAbrirPrioridade(false) }}
+                      className={`w-full px-3 py-2 text-xs text-left flex items-center gap-1.5 hover:bg-slate-700 transition ${prioridade === p ? "text-white" : "text-slate-400"}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${prioridadeCor[p]}`} />
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <DropdownCategoria
-            valor={categoria}
-            onChange={setCategoria}
-            aberto={abrirCategoria}
-            setAberto={(v) => { setAbrirCategoria(v); if (v) setAbrirPrioridade(false) }}
-            mostrarAdicionar
-          />
+          {/* Categoria */}
+          <div className="flex flex-col gap-1">
+            <label className="text-white/30 text-xs px-1">Categoria</label>
+            <DropdownCategoria
+              valor={categoria}
+              onChange={setCategoria}
+              aberto={abrirCategoria}
+              setAberto={(v) => { setAbrirCategoria(v); if (v) setAbrirPrioridade(false) }}
+              mostrarAdicionar
+            />
+          </div>
         </div>
 
         <button
@@ -349,40 +357,48 @@ export default function TaskList() {
                   className="bg-slate-700/60 text-white rounded-xl px-4 py-2 outline-none text-sm focus:ring-1 focus:ring-violet-600 transition w-full"
                 />
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="relative dropdown-container">
-                    <button
-                      onClick={() => { setAbrirEditPrioridade(!abrirEditPrioridade); setAbrirEditCategoria(false) }}
-                      className="w-full bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs flex items-center justify-between"
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${prioridadeCor[editPrioridade]}`} />
-                        {editPrioridade}
-                      </span>
-                      <span className="text-slate-500">▾</span>
-                    </button>
-                    {abrirEditPrioridade && (
-                      <div className="absolute top-full mt-1 left-0 w-full bg-slate-800 border border-slate-700 rounded-xl overflow-hidden z-10 shadow-lg">
-                        {(["Alta", "Média", "Baixa"] as Prioridade[]).map((p) => (
-                          <button
-                            key={p}
-                            onClick={() => { setEditPrioridade(p); setAbrirEditPrioridade(false) }}
-                            className={`w-full px-3 py-2 text-xs text-left flex items-center gap-1.5 hover:bg-slate-700 transition ${editPrioridade === p ? "text-white" : "text-slate-400"}`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${prioridadeCor[p]}`} />
-                            {p}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-white/30 text-xs px-1">Prioridade</label>
+                    <div className="relative dropdown-container">
+                      <button
+                        onClick={() => { setAbrirEditPrioridade(!abrirEditPrioridade); setAbrirEditCategoria(false) }}
+                        title="Alta = urgente e importante · Média = importante · Baixa = pode esperar"
+                        className="w-full bg-slate-700/60 text-slate-300 rounded-xl px-3 py-2 outline-none text-xs flex items-center justify-between"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${prioridadeCor[editPrioridade]}`} />
+                          {editPrioridade}
+                        </span>
+                        <span className="text-slate-500">▾</span>
+                      </button>
+                      {abrirEditPrioridade && (
+                        <div className="absolute top-full mt-1 left-0 w-full bg-slate-800 border border-slate-700 rounded-xl overflow-hidden z-10 shadow-lg">
+                          {(["Alta", "Média", "Baixa"] as Prioridade[]).map((p) => (
+                            <button
+                              key={p}
+                              onClick={() => { setEditPrioridade(p); setAbrirEditPrioridade(false) }}
+                              className={`w-full px-3 py-2 text-xs text-left flex items-center gap-1.5 hover:bg-slate-700 transition ${editPrioridade === p ? "text-white" : "text-slate-400"}`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${prioridadeCor[p]}`} />
+                              {p}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <DropdownCategoria
-                    valor={editCategoria}
-                    onChange={setEditCategoria}
-                    aberto={abrirEditCategoria}
-                    setAberto={(v) => { setAbrirEditCategoria(v); if (v) setAbrirEditPrioridade(false) }}
-                    mostrarAdicionar
-                  />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-white/30 text-xs px-1">Categoria</label>
+                    <DropdownCategoria
+                      valor={editCategoria}
+                      onChange={setEditCategoria
+                      }
+                      aberto={abrirEditCategoria}
+                      setAberto={(v) => { setAbrirEditCategoria(v); if (v) setAbrirEditPrioridade(false) }}
+                      mostrarAdicionar
+                    />
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button

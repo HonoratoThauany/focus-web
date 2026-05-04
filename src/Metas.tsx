@@ -117,7 +117,6 @@ export default function Meta() {
             </p>
           </div>
 
-          {/* Barra de progresso */}
           <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
             <div
               className={`h-2 rounded-full transition-all duration-700 ease-out ${
@@ -127,7 +126,7 @@ export default function Meta() {
             />
           </div>
 
-          {/* Bolinhas de sessão */}
+          
           <div className="flex gap-1.5 flex-wrap">
             {Array.from({ length: meta }).map((_, i) => (
               <div

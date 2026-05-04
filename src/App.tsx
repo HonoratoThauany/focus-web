@@ -37,7 +37,7 @@ export default function App() {
         <Logo size="sm" />
         <div className="flex items-center gap-4">
           <p className="text-white/40 text-xs hidden sm:block">
-            Olá, {user.displayName?.split(" ")[0]}
+            Olá, {user?.displayName?.split(" ")[0]}
           </p>
           <button
             onClick={() => signOut(auth)}
@@ -56,6 +56,8 @@ export default function App() {
         </div>
 
         <div className="hidden xl:block w-px bg-white/5 self-stretch" />
+
+        
 
         <div className="flex-1 w-full">
           <TaskList />
