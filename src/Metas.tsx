@@ -98,7 +98,7 @@ export default function Meta() {
             onChange={(e) => setNovaMeta(Number(e.target.value))}
             className="bg-slate-700 text-white rounded-xl px-3 py-2 w-16 outline-none text-sm"
           />
-          <span className="text-slate-400 text-sm">sessões por dia</span>
+          <span className="text-slate-400 text-sm">ciclos por dia</span>
           <button
             onClick={salvarMeta}
             className="bg-violet-700 hover:bg-violet-600 text-white text-sm px-4 py-2 rounded-xl transition active:scale-95 ml-auto"
@@ -113,10 +113,11 @@ export default function Meta() {
               <span className={`font-bold text-2xl transition-all duration-300 ${concluiu ? "text-green-400" : "text-white"}`}>
                 {sessoesHoje}
               </span>
-              {" "}/{" "}{meta} sessões
+              {" "}/{" "}{meta} ciclos
             </p>
           </div>
 
+          {/* Barra de progresso */}
           <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
             <div
               className={`h-2 rounded-full transition-all duration-700 ease-out ${
@@ -126,7 +127,7 @@ export default function Meta() {
             />
           </div>
 
-          
+          {/* Bolinhas de sessão */}
           <div className="flex gap-1.5 flex-wrap">
             {Array.from({ length: meta }).map((_, i) => (
               <div
